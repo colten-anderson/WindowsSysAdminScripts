@@ -1,6 +1,6 @@
 # Server Administration Scripts
 
-This directory contains PowerShell scripts specifically designed for Windows Server administration tasks. These scripts cover a wide range of server management activities, from Active Directory operations to system monitoring and maintenance.
+This directory contains PowerShell scripts specifically designed for Windows Server administration tasks. These scripts cover a wide range of server management activities, from Active Directory operations to system monitoring and maintenance. Most scripts have been generated directly by ManusAI as part of a project.
 
 ## Categories
 
