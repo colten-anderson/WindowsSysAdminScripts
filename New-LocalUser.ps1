@@ -22,7 +22,10 @@
     A local group to add the new user to (e.g., "Administrators", "Users").
 
 .PARAMETER ComputerName
-    The name of the computer to create the user on. Defaults to the local computer.
+    The name of the computer to create the user on. This script currently
+    supports only the local computer due to limitations of the LocalAccounts
+    module. The parameter is retained for compatibility but must reference the
+    local machine.
 
 .EXAMPLE
     .\New-LocalUser.ps1 -Username "jdoe" -Password "SecurePass123!" -FullName "John Doe"
@@ -72,14 +75,19 @@ function New-RandomPassword {
     return $password
 }
 
-Write-Host "Attempting to create local user 
-'$Username' on $ComputerName..." -ForegroundColor Cyan
+Write-Host "Attempting to create local user '$Username' on $ComputerName..." -ForegroundColor Cyan
+
+# LocalAccounts cmdlets do not support remote computer names. Exit if a remote
+# computer is specified.
+if ($ComputerName -ne $env:COMPUTERNAME -and $ComputerName -ne 'localhost') {
+    Write-Warning "Remote computer management is not supported. Run this script locally on $ComputerName."
+    exit 1
+}
 
 try {
     # Check if user already exists
-    if (Get-LocalUser -Name $Username -ComputerName $ComputerName -ErrorAction SilentlyContinue) {
-        Write-Warning "Local user 
-'$Username' already exists on $ComputerName. Skipping creation."
+    if (Get-LocalUser -Name $Username -ErrorAction SilentlyContinue) {
+        Write-Warning "Local user '$Username' already exists on $ComputerName. Skipping creation."
         exit 0
     }
 
@@ -88,8 +96,7 @@ try {
         $Password
     } else {
         $randomPass = New-RandomPassword
-        Write-Host "Generated random password for 
-'$Username': $randomPass" -ForegroundColor Yellow
+        Write-Host "Generated random password for $Username: $randomPass" -ForegroundColor Yellow
         $randomPass
     }
 
@@ -99,32 +106,25 @@ try {
         Password = (ConvertTo-SecureString $userPassword -AsPlainText -Force)
         FullName = $FullName
         Description = $Description
-        ComputerName = $ComputerName
         AccountExpires = (Get-Date).AddYears(100) # Set a far future expiry
         PasswordNeverExpires = $true
     }
     
     New-LocalUser @userParams -ErrorAction Stop
-    Write-Host "Successfully created local user 
-'$Username' on $ComputerName." -ForegroundColor Green
+    Write-Host "Successfully created local user $Username on $ComputerName." -ForegroundColor Green
 
     # Add to group if specified
     if ($AddToGroup) {
         try {
-            Add-LocalGroupMember -Group $AddToGroup -Member $Username -ComputerName $ComputerName -ErrorAction Stop
-            Write-Host "Successfully added 
-'$Username' to local group 
-'$AddToGroup' on $ComputerName." -ForegroundColor Green
+            Add-LocalGroupMember -Group $AddToGroup -Member $Username -ErrorAction Stop
+            Write-Host "Successfully added $Username to local group $AddToGroup on $ComputerName." -ForegroundColor Green
         } catch {
-            Write-Warning "Failed to add 
-'$Username' to group 
-'$AddToGroup' on $ComputerName: $($_.Exception.Message)"
+            Write-Warning "Failed to add $Username to group $AddToGroup on $ComputerName: $($_.Exception.Message)"
         }
     }
 
 } catch {
-    Write-Error "Error creating local user 
-'$Username' on $ComputerName: $($_.Exception.Message)"
+    Write-Error "Error creating local user $Username on $ComputerName: $($_.Exception.Message)"
     exit 1
 }
 
