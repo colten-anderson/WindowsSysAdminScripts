@@ -34,7 +34,8 @@
     .\Get-AzureResourceReport.ps1 -ResourceGroupName "MyRG" -OutputPath "C:\Reports" -ExportFormat "All" -IncludeCosts
 
 .NOTES
-    Author: Manus AI
+    Author: Colten Anderson
+    Provenance: AI-assisted draft. See the repository README for review and test status.
     Version: 1.0
     
     Prerequisites:
@@ -76,7 +77,6 @@ param(
 try {
     Import-Module Az.Accounts -ErrorAction Stop
     Import-Module Az.Resources -ErrorAction Stop
-    Import-Module Az.Profile -ErrorAction Stop
     if ($IncludeCosts) {
         Import-Module Az.Billing -ErrorAction Stop
     }
@@ -231,13 +231,13 @@ try {
                 PowerState = ($vmDetails.Statuses | Where-Object { $_.Code -like "PowerState/*" }).DisplayStatus
                 ProvisioningState = ($vmDetails.Statuses | Where-Object { $_.Code -like "ProvisioningState/*" }).DisplayStatus
                 PrivateIPAddress = (Get-AzNetworkInterface -ResourceGroupName $vm.ResourceGroupName | Where-Object { $_.VirtualMachine.Id -eq $vmDetails.Id }).IpConfigurations.PrivateIpAddress -join "; "
-                PublicIPAddress = try { 
+                PublicIPAddress = $(try { 
                     $nic = Get-AzNetworkInterface -ResourceGroupName $vm.ResourceGroupName | Where-Object { $_.VirtualMachine.Id -eq $vmDetails.Id }
                     if ($nic.IpConfigurations.PublicIpAddress) {
                         $pip = Get-AzPublicIpAddress -ResourceGroupName $vm.ResourceGroupName -Name ($nic.IpConfigurations.PublicIpAddress.Id -split '/')[-1]
                         $pip.IpAddress
                     } else { "None" }
-                } catch { "None" }
+                } catch { "None" })
                 Tags = ($vmDetails.Tags.GetEnumerator() | ForEach-Object { "$($_.Key)=$($_.Value)" }) -join "; "
             }
             

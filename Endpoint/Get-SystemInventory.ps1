@@ -34,7 +34,8 @@
     .\Get-SystemInventory.ps1 -ComputerName "DESKTOP01" -OutputPath "C:\Reports" -ExportFormat "All" -IncludeSoftware
 
 .NOTES
-    Author: Manus AI
+    Author: Colten Anderson
+    Provenance: AI-assisted draft. See the repository README for review and test status.
     Version: 1.0
     
     Prerequisites:
@@ -78,7 +79,7 @@ try {
     if (-not $ping) {
         throw "Cannot connect to $ComputerName"
     }
-    Write-Host "✓ Connectivity test passed" -ForegroundColor Green
+    Write-Host "[OK] Connectivity test passed" -ForegroundColor Green
 } catch {
     Write-Error "Cannot connect to $ComputerName`: $($_.Exception.Message)"
     exit 1
@@ -95,10 +96,10 @@ function Get-SafeCimInstance {
     try {
         Write-Host "Gathering $Description..." -ForegroundColor Yellow
         $data = Get-CimInstance -ClassName $ClassName -ComputerName $ComputerName -ErrorAction Stop
-        Write-Host "✓ $Description collected" -ForegroundColor Green
+        Write-Host "[OK] $Description collected" -ForegroundColor Green
         return $data
     } catch {
-        Write-Host "✗ Failed to collect $Description`: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "[FAIL] Failed to collect $Description`: $($_.Exception.Message)" -ForegroundColor Red
         return $null
     }
 }
@@ -274,7 +275,27 @@ if ($networkConfig) {
 
 # Gather installed software (if requested)
 if ($IncludeSoftware) {
-    $softwareInfo = Get-SafeCimInstance -ClassName "Win32_Product" -ComputerName $ComputerName -Description "Installed Software"
+    # Read the registry uninstall keys instead of Win32_Product, which triggers an MSI
+    # consistency check (and possible repair) of every installed package.
+    Write-Host "Gathering Installed Software..." -ForegroundColor Yellow
+    $uninstallKeys = @(
+        'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*',
+        'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*'
+    )
+    $getSoftware = {
+        param([string[]]$Keys)
+        Get-ItemProperty -Path $Keys -ErrorAction SilentlyContinue |
+            Where-Object { $_.DisplayName } |
+            Select-Object @{ n = 'Name'; e = { $_.DisplayName } },
+                          @{ n = 'Version'; e = { $_.DisplayVersion } },
+                          @{ n = 'Vendor'; e = { $_.Publisher } },
+                          InstallDate, InstallLocation, InstallSource
+    }
+    if ($ComputerName -in @($env:COMPUTERNAME, 'localhost', '.')) {
+        $softwareInfo = & $getSoftware $uninstallKeys
+    } else {
+        $softwareInfo = Invoke-Command -ComputerName $ComputerName -ScriptBlock $getSoftware -ArgumentList (, $uninstallKeys)
+    }
     if ($softwareInfo) {
         $inventoryData["InstalledSoftware"] = $softwareInfo | ForEach-Object {
             [PSCustomObject]@{
@@ -348,9 +369,9 @@ if ($ExportFormat -eq "CSV" -or $ExportFormat -eq "All") {
         $csvPath = Join-Path $OutputPath "$($ComputerName)_$($category)_$timestamp.csv"
         try {
             $inventoryData[$category] | Export-Csv -Path $csvPath -NoTypeInformation -Encoding UTF8
-            Write-Host "✓ CSV exported: $csvPath" -ForegroundColor Green
+            Write-Host "[OK] CSV exported: $csvPath" -ForegroundColor Green
         } catch {
-            Write-Host "✗ Failed to export CSV for $category`: $($_.Exception.Message)" -ForegroundColor Red
+            Write-Host "[FAIL] Failed to export CSV for $category`: $($_.Exception.Message)" -ForegroundColor Red
         }
     }
 }
@@ -359,9 +380,9 @@ if ($ExportFormat -eq "JSON" -or $ExportFormat -eq "All") {
     $jsonPath = Join-Path $OutputPath "$($ComputerName)_Inventory_$timestamp.json"
     try {
         $inventoryData | ConvertTo-Json -Depth 10 | Out-File -FilePath $jsonPath -Encoding UTF8
-        Write-Host "✓ JSON exported: $jsonPath" -ForegroundColor Green
+        Write-Host "[OK] JSON exported: $jsonPath" -ForegroundColor Green
     } catch {
-        Write-Host "✗ Failed to export JSON: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "[FAIL] Failed to export JSON: $($_.Exception.Message)" -ForegroundColor Red
     }
 }
 
@@ -448,9 +469,9 @@ if ($ExportFormat -eq "HTML" -or $ExportFormat -eq "All") {
 
     try {
         $htmlContent | Out-File -FilePath $htmlPath -Encoding UTF8
-        Write-Host "✓ HTML exported: $htmlPath" -ForegroundColor Green
+        Write-Host "[OK] HTML exported: $htmlPath" -ForegroundColor Green
     } catch {
-        Write-Host "✗ Failed to export HTML: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "[FAIL] Failed to export HTML: $($_.Exception.Message)" -ForegroundColor Red
     }
 }
 

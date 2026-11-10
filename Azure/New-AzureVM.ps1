@@ -55,7 +55,8 @@
     .\New-AzureVM.ps1 -VMName "WebServer01" -ResourceGroupName "WebRG" -Location "westus2" -VMSize "Standard_D2s_v3" -AdminUsername "admin" -OSType "Linux" -ImagePublisher "Canonical" -ImageOffer "UbuntuServer" -ImageSku "18.04-LTS" -OpenPorts @(22, 80, 443)
 
 .NOTES
-    Author: Manus AI
+    Author: Colten Anderson
+    Provenance: AI-assisted draft. See the repository README for review and test status.
     Version: 1.0
     
     Prerequisites:

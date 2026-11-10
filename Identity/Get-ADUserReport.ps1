@@ -25,7 +25,8 @@
     .\Get-ADUserReport.ps1 -OutputPath "C:\Reports" -IncludeDisabled -DaysInactive 60
 
 .NOTES
-    Author: Manus AI
+    Author: Colten Anderson
+    Provenance: AI-assisted draft. See the repository README for review and test status.
     Version: 1.0
     
     Prerequisites:

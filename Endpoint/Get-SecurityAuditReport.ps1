@@ -28,7 +28,8 @@
     .\Get-SecurityAuditReport.ps1 -ComputerName "SERVER01" -OutputPath "C:\Reports" -CheckEventLogs -DaysBack 30
 
 .NOTES
-    Author: Manus AI
+    Author: Colten Anderson
+    Provenance: AI-assisted draft. See the repository README for review and test status.
     Version: 1.0
     
     Prerequisites:
@@ -86,7 +87,7 @@ try {
     if (-not $ping) {
         throw "Cannot connect to $ComputerName"
     }
-    Write-Host "✓ Connectivity test passed" -ForegroundColor Green
+    Write-Host "[OK] Connectivity test passed" -ForegroundColor Green
 } catch {
     Write-Error "Cannot connect to $ComputerName`: $($_.Exception.Message)"
     exit 1
@@ -108,9 +109,9 @@ try {
         TotalPhysicalMemory = [math]::Round($systemInfo.TotalPhysicalMemory / 1GB, 2)
     }
     
-    Write-Host "✓ System information collected" -ForegroundColor Green
+    Write-Host "[OK] System information collected" -ForegroundColor Green
 } catch {
-    Write-Host "✗ Failed to collect system information: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "[FAIL] Failed to collect system information: $($_.Exception.Message)" -ForegroundColor Red
     Add-Finding -Category "System" -Finding "Failed to collect system information" -Severity "High" -Recommendation "Check WMI/CIM connectivity and permissions"
 }
 
@@ -153,10 +154,10 @@ try {
     }
     
     $auditData["LocalUsers"] = $userAudit
-    Write-Host "✓ Local user accounts audited ($($localUsers.Count) users)" -ForegroundColor Green
+    Write-Host "[OK] Local user accounts audited ($($localUsers.Count) users)" -ForegroundColor Green
     
 } catch {
-    Write-Host "✗ Failed to audit local users: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "[FAIL] Failed to audit local users: $($_.Exception.Message)" -ForegroundColor Red
     Add-Finding -Category "User Accounts" -Finding "Failed to audit local user accounts" -Severity "High" -Recommendation "Check permissions and PowerShell execution policy"
 }
 
@@ -196,10 +197,10 @@ try {
     }
     
     $auditData["LocalGroups"] = $groupAudit
-    Write-Host "✓ Local groups audited ($($localGroups.Count) groups)" -ForegroundColor Green
+    Write-Host "[OK] Local groups audited ($($localGroups.Count) groups)" -ForegroundColor Green
     
 } catch {
-    Write-Host "✗ Failed to audit local groups: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "[FAIL] Failed to audit local groups: $($_.Exception.Message)" -ForegroundColor Red
     Add-Finding -Category "Group Membership" -Finding "Failed to audit local groups" -Severity "Medium" -Recommendation "Check permissions and group access"
 }
 
@@ -234,10 +235,10 @@ try {
     }
     
     $auditData["FirewallProfiles"] = $firewallAudit
-    Write-Host "✓ Windows Firewall status checked" -ForegroundColor Green
+    Write-Host "[OK] Windows Firewall status checked" -ForegroundColor Green
     
 } catch {
-    Write-Host "✗ Failed to check firewall status: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "[FAIL] Failed to check firewall status: $($_.Exception.Message)" -ForegroundColor Red
     Add-Finding -Category "Firewall" -Finding "Failed to check Windows Firewall status" -Severity "High" -Recommendation "Manually verify firewall configuration"
 }
 
@@ -273,17 +274,36 @@ try {
         Add-Finding -Category "Updates" -Finding "$($pendingUpdates.Count) total updates are pending" -Severity "Medium" -Recommendation "Install pending Windows updates"
     }
     
-    Write-Host "✓ Windows Update status checked ($($pendingUpdates.Count) pending updates)" -ForegroundColor Green
+    Write-Host "[OK] Windows Update status checked ($($pendingUpdates.Count) pending updates)" -ForegroundColor Green
     
 } catch {
-    Write-Host "✗ Failed to check Windows Update status: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "[FAIL] Failed to check Windows Update status: $($_.Exception.Message)" -ForegroundColor Red
     Add-Finding -Category "Updates" -Finding "Failed to check Windows Update status" -Severity "Medium" -Recommendation "Manually check for Windows updates"
 }
 
 # Check installed software for known vulnerabilities
 try {
     Write-Host "Checking installed software..." -ForegroundColor Yellow
-    $installedSoftware = Get-WmiObject -Class Win32_Product -ComputerName $ComputerName | Select-Object Name, Version, Vendor, InstallDate
+    # Read the registry uninstall keys instead of Win32_Product, which triggers an MSI
+    # consistency check (and possible repair) of every installed package.
+    $uninstallKeys = @(
+        'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*',
+        'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*'
+    )
+    $getSoftware = {
+        param([string[]]$Keys)
+        Get-ItemProperty -Path $Keys -ErrorAction SilentlyContinue |
+            Where-Object { $_.DisplayName } |
+            Select-Object @{ n = 'Name'; e = { $_.DisplayName } },
+                          @{ n = 'Version'; e = { $_.DisplayVersion } },
+                          @{ n = 'Vendor'; e = { $_.Publisher } },
+                          InstallDate, InstallLocation, InstallSource
+    }
+    if ($ComputerName -in @($env:COMPUTERNAME, 'localhost', '.')) {
+        $installedSoftware = & $getSoftware $uninstallKeys
+    } else {
+        $installedSoftware = Invoke-Command -ComputerName $ComputerName -ScriptBlock $getSoftware -ArgumentList (, $uninstallKeys)
+    }
     
     $softwareAudit = @()
     foreach ($software in $installedSoftware) {
@@ -303,10 +323,10 @@ try {
     }
     
     $auditData["InstalledSoftware"] = $softwareAudit
-    Write-Host "✓ Installed software checked ($($installedSoftware.Count) programs)" -ForegroundColor Green
+    Write-Host "[OK] Installed software checked ($($installedSoftware.Count) programs)" -ForegroundColor Green
     
 } catch {
-    Write-Host "✗ Failed to check installed software: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "[FAIL] Failed to check installed software: $($_.Exception.Message)" -ForegroundColor Red
     Add-Finding -Category "Software" -Finding "Failed to enumerate installed software" -Severity "Low" -Recommendation "Manually review installed programs for security vulnerabilities"
 }
 
@@ -355,10 +375,10 @@ if ($CheckEventLogs) {
             Add-Finding -Category "Security Events" -Finding "$($accountLockouts.Count) account lockout events in the last $DaysBack days" -Severity "Medium" -Recommendation "Investigate account lockout events for potential security issues"
         }
         
-        Write-Host "✓ Security event logs analyzed" -ForegroundColor Green
+        Write-Host "[OK] Security event logs analyzed" -ForegroundColor Green
         
     } catch {
-        Write-Host "✗ Failed to analyze security event logs: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "[FAIL] Failed to analyze security event logs: $($_.Exception.Message)" -ForegroundColor Red
         Add-Finding -Category "Security Events" -Finding "Failed to analyze security event logs" -Severity "Low" -Recommendation "Manually review security event logs for suspicious activity"
     }
 }
@@ -388,9 +408,9 @@ if ($ExportFormat -eq "CSV" -or $ExportFormat -eq "Both") {
         $csvPath = Join-Path $OutputPath "SecurityAudit_$($ComputerName)_$($category)_$timestamp.csv"
         try {
             $auditData[$category] | Export-Csv -Path $csvPath -NoTypeInformation -Encoding UTF8
-            Write-Host "✓ CSV exported: $csvPath" -ForegroundColor Green
+            Write-Host "[OK] CSV exported: $csvPath" -ForegroundColor Green
         } catch {
-            Write-Host "✗ Failed to export CSV for $category`: $($_.Exception.Message)" -ForegroundColor Red
+            Write-Host "[FAIL] Failed to export CSV for $category`: $($_.Exception.Message)" -ForegroundColor Red
         }
     }
 }
@@ -511,9 +531,9 @@ if ($ExportFormat -eq "HTML" -or $ExportFormat -eq "Both") {
 
     try {
         $htmlContent | Out-File -FilePath $htmlPath -Encoding UTF8
-        Write-Host "✓ HTML report exported: $htmlPath" -ForegroundColor Green
+        Write-Host "[OK] HTML report exported: $htmlPath" -ForegroundColor Green
     } catch {
-        Write-Host "✗ Failed to export HTML report: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "[FAIL] Failed to export HTML report: $($_.Exception.Message)" -ForegroundColor Red
     }
 }
 
@@ -530,7 +550,7 @@ Write-Host "Export Format: $ExportFormat" -ForegroundColor White
 Write-Host "Output Path: $OutputPath" -ForegroundColor White
 
 if ($summary.HighSeverityFindings -gt 0) {
-    Write-Host "`n⚠️  HIGH PRIORITY: Address high severity findings immediately!" -ForegroundColor Red
+    Write-Host "`n[WARN]  HIGH PRIORITY: Address high severity findings immediately!" -ForegroundColor Red
 }
 
 Write-Host "`nSecurity audit completed!" -ForegroundColor Green

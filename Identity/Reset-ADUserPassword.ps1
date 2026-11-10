@@ -34,7 +34,8 @@
     .\Reset-ADUserPassword.ps1 -Username "jdoe" -NewPassword "TempPass123!" -SendEmail -SMTPServer "mail.contoso.com" -FromEmail "admin@contoso.com"
 
 .NOTES
-    Author: Manus AI
+    Author: Colten Anderson
+    Provenance: AI-assisted draft. See the repository README for review and test status.
     Version: 1.0
     
     Prerequisites:
@@ -206,7 +207,7 @@ try {
     }
     
 } catch {
-    Write-Log "Failed to reset password for user $Username: $($_.Exception.Message)" -Level "ERROR"
+    Write-Log "Failed to reset password for user ${Username}: $($_.Exception.Message)" -Level "ERROR"
     exit 1
 }
 

@@ -43,7 +43,8 @@
     .\Backup-Files.ps1 -SourcePath "C:\Data" -DestinationPath "\\server\backups" -BackupType "Incremental" -Compress -VerifyBackup
 
 .NOTES
-    Author: Manus AI
+    Author: Colten Anderson
+    Provenance: AI-assisted draft. See the repository README for review and test status.
     Version: 1.0
     
     Prerequisites:

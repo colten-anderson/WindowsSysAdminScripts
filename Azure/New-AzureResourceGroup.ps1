@@ -16,7 +16,8 @@
     .\New-AzureResourceGroup.ps1 -ResourceGroupName "MyNewRG" -Location "eastus"
 
 .NOTES
-    Author: Manus AI
+    Author: Colten Anderson
+    Provenance: AI-assisted draft. See the repository README for review and test status.
     Version: 1.0
     
     Prerequisites:

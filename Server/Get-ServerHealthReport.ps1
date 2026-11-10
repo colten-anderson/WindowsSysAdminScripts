@@ -40,7 +40,8 @@
     .\Get-ServerHealthReport.ps1 -ComputerName "SERVER01" -EmailReport -SMTPServer "mail.contoso.com" -ToEmail "admin@contoso.com" -FromEmail "monitoring@contoso.com"
 
 .NOTES
-    Author: Manus AI
+    Author: Colten Anderson
+    Provenance: AI-assisted draft. See the repository README for review and test status.
     Version: 1.0
     
     Prerequisites:
@@ -106,15 +107,15 @@ function Test-ServerConnectivity {
     try {
         $ping = Test-Connection -ComputerName $ComputerName -Count 1 -Quiet
         if ($ping) {
-            Write-Host "✓ Server connectivity: OK" -ForegroundColor Green
+            Write-Host "[OK] Server connectivity: OK" -ForegroundColor Green
             return $true
         } else {
-            Write-Host "✗ Server connectivity: Failed" -ForegroundColor Red
+            Write-Host "[FAIL] Server connectivity: Failed" -ForegroundColor Red
             $errors += "Cannot connect to server $ComputerName"
             return $false
         }
     } catch {
-        Write-Host "✗ Server connectivity: Error - $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "[FAIL] Server connectivity: Error - $($_.Exception.Message)" -ForegroundColor Red
         $errors += "Connectivity error: $($_.Exception.Message)"
         return $false
     }
@@ -150,10 +151,10 @@ try {
     }
     
     Add-HealthData -Category "SystemInfo" -Data $systemData
-    Write-Host "✓ System information collected" -ForegroundColor Green
+    Write-Host "[OK] System information collected" -ForegroundColor Green
     
 } catch {
-    Write-Host "✗ Failed to collect system information: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "[FAIL] Failed to collect system information: $($_.Exception.Message)" -ForegroundColor Red
     $errors += "System information error: $($_.Exception.Message)"
 }
 
@@ -184,10 +185,10 @@ try {
     }
     
     Add-HealthData -Category "DiskSpace" -Data $diskData -Status $diskStatus
-    Write-Host "✓ Disk space checked" -ForegroundColor Green
+    Write-Host "[OK] Disk space checked" -ForegroundColor Green
     
 } catch {
-    Write-Host "✗ Failed to check disk space: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "[FAIL] Failed to check disk space: $($_.Exception.Message)" -ForegroundColor Red
     $errors += "Disk space error: $($_.Exception.Message)"
 }
 
@@ -213,10 +214,10 @@ try {
     } else { "OK" }
     
     Add-HealthData -Category "Memory" -Data $memoryData -Status $memoryStatus
-    Write-Host "✓ Memory usage checked" -ForegroundColor Green
+    Write-Host "[OK] Memory usage checked" -ForegroundColor Green
     
 } catch {
-    Write-Host "✗ Failed to check memory usage: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "[FAIL] Failed to check memory usage: $($_.Exception.Message)" -ForegroundColor Red
     $errors += "Memory usage error: $($_.Exception.Message)"
 }
 
@@ -243,10 +244,10 @@ try {
     } else { "OK" }
     
     Add-HealthData -Category "CPU" -Data $cpuData -Status $cpuStatus
-    Write-Host "✓ CPU usage checked" -ForegroundColor Green
+    Write-Host "[OK] CPU usage checked" -ForegroundColor Green
     
 } catch {
-    Write-Host "✗ Failed to check CPU usage: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "[FAIL] Failed to check CPU usage: $($_.Exception.Message)" -ForegroundColor Red
     $errors += "CPU usage error: $($_.Exception.Message)"
 }
 
@@ -281,10 +282,10 @@ try {
     }
     
     Add-HealthData -Category "Services" -Data $serviceData -Status $serviceStatus
-    Write-Host "✓ Critical services checked" -ForegroundColor Green
+    Write-Host "[OK] Critical services checked" -ForegroundColor Green
     
 } catch {
-    Write-Host "✗ Failed to check services: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "[FAIL] Failed to check services: $($_.Exception.Message)" -ForegroundColor Red
     $errors += "Services error: $($_.Exception.Message)"
 }
 
@@ -330,10 +331,10 @@ try {
     }
     
     Add-HealthData -Category "EventLogs" -Data $eventData -Status $eventStatus
-    Write-Host "✓ Event logs checked" -ForegroundColor Green
+    Write-Host "[OK] Event logs checked" -ForegroundColor Green
     
 } catch {
-    Write-Host "✗ Failed to check event logs: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "[FAIL] Failed to check event logs: $($_.Exception.Message)" -ForegroundColor Red
     $errors += "Event logs error: $($_.Exception.Message)"
 }
 
@@ -348,10 +349,10 @@ try {
     }
     
     Add-HealthData -Category "Uptime" -Data $uptimeData
-    Write-Host "✓ Uptime calculated" -ForegroundColor Green
+    Write-Host "[OK] Uptime calculated" -ForegroundColor Green
     
 } catch {
-    Write-Host "✗ Failed to calculate uptime: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "[FAIL] Failed to calculate uptime: $($_.Exception.Message)" -ForegroundColor Red
     $errors += "Uptime calculation error: $($_.Exception.Message)"
 }
 
@@ -407,7 +408,7 @@ $htmlContent = @"
 if ($warnings.Count -gt 0) {
     $htmlContent += @"
         <div class="warning-list">
-            <h3>⚠️ Warnings</h3>
+            <h3>[WARN] Warnings</h3>
             <ul>
 "@
     foreach ($warning in $warnings) {
@@ -420,7 +421,7 @@ if ($warnings.Count -gt 0) {
 if ($errors.Count -gt 0) {
     $htmlContent += @"
         <div class="error-list">
-            <h3>❌ Errors</h3>
+            <h3>[FAIL] Errors</h3>
             <ul>
 "@
     foreach ($error in $errors) {
@@ -577,9 +578,9 @@ $htmlContent += @"
 # Save HTML report
 try {
     $htmlContent | Out-File -FilePath $reportPath -Encoding UTF8
-    Write-Host "✓ HTML report saved to: $reportPath" -ForegroundColor Green
+    Write-Host "[OK] HTML report saved to: $reportPath" -ForegroundColor Green
 } catch {
-    Write-Host "✗ Failed to save HTML report: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "[FAIL] Failed to save HTML report: $($_.Exception.Message)" -ForegroundColor Red
     $errors += "Report generation error: $($_.Exception.Message)"
 }
 
@@ -600,9 +601,9 @@ Please see the attached HTML report for detailed information.
 "@
 
         Send-MailMessage -To $ToEmail -From $FromEmail -Subject $subject -Body $body -SmtpServer $SMTPServer -Attachments $reportPath
-        Write-Host "✓ Email report sent to: $ToEmail" -ForegroundColor Green
+        Write-Host "[OK] Email report sent to: $ToEmail" -ForegroundColor Green
     } catch {
-        Write-Host "✗ Failed to send email report: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "[FAIL] Failed to send email report: $($_.Exception.Message)" -ForegroundColor Red
     }
 }
 

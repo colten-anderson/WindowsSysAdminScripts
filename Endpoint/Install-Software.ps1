@@ -37,7 +37,8 @@
     .\Install-Software.ps1 -SoftwareName "Notepad++" -InstallerType "Winget" -PackageName "Notepad++.Notepad++"
 
 .NOTES
-    Author: Manus AI
+    Author: Colten Anderson
+    Provenance: AI-assisted draft. See the repository README for review and test status.
     Version: 1.0
     
     Prerequisites:
@@ -226,8 +227,15 @@ try {
 try {
     Write-Log "Verifying installation..."
     
-    # Check installed programs
-    $installedPrograms = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*$SoftwareName*" }
+    # Check the registry uninstall keys. Win32_Product is avoided on purpose: querying it
+    # triggers a consistency check (and possible repair) of every MSI package on the device.
+    $uninstallKeys = @(
+        'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*',
+        'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*'
+    )
+    $installedPrograms = Get-ItemProperty -Path $uninstallKeys -ErrorAction SilentlyContinue |
+        Where-Object { $_.DisplayName -like "*$SoftwareName*" } |
+        Select-Object @{ n = 'Name'; e = { $_.DisplayName } }, @{ n = 'Version'; e = { $_.DisplayVersion } }
     
     if ($installedPrograms) {
         Write-Log "Verification successful: $SoftwareName found in installed programs" -Level "SUCCESS"
@@ -235,7 +243,7 @@ try {
             Write-Log "Found: $($program.Name) - Version: $($program.Version)"
         }
     } else {
-        Write-Log "Verification: $SoftwareName not found in Win32_Product (this may be normal for some installers)" -Level "WARNING"
+        Write-Log "Verification: $SoftwareName not found in the registry uninstall keys (this may be normal for some installers)" -Level "WARNING"
     }
     
 } catch {

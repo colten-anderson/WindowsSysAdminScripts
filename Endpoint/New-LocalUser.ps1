@@ -34,7 +34,8 @@
     .\New-LocalUser.ps1 -Username "adminuser" -AddToGroup "Administrators" -ComputerName "DESKTOP01"
 
 .NOTES
-    Author: Manus AI
+    Author: Colten Anderson
+    Provenance: AI-assisted draft. See the repository README for review and test status.
     Version: 1.0
     
     Prerequisites:
@@ -96,7 +97,7 @@ try {
         $Password
     } else {
         $randomPass = New-RandomPassword
-        Write-Host "Generated random password for $Username: $randomPass" -ForegroundColor Yellow
+        Write-Host "Generated random password for ${Username}: $randomPass" -ForegroundColor Yellow
         $randomPass
     }
 
@@ -119,12 +120,12 @@ try {
             Add-LocalGroupMember -Group $AddToGroup -Member $Username -ErrorAction Stop
             Write-Host "Successfully added $Username to local group $AddToGroup on $ComputerName." -ForegroundColor Green
         } catch {
-            Write-Warning "Failed to add $Username to group $AddToGroup on $ComputerName: $($_.Exception.Message)"
+            Write-Warning "Failed to add $Username to group $AddToGroup on ${ComputerName}: $($_.Exception.Message)"
         }
     }
 
 } catch {
-    Write-Error "Error creating local user $Username on $ComputerName: $($_.Exception.Message)"
+    Write-Error "Error creating local user $Username on ${ComputerName}: $($_.Exception.Message)"
     exit 1
 }
 
