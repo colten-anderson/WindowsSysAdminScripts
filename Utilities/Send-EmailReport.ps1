@@ -55,7 +55,8 @@
     .\Send-EmailReport.ps1 -SMTPServer "mail.company.com" -SMTPPort 25 -From "reports@company.com" -To @("manager@company.com", "team@company.com") -Subject "Weekly Security Report" -Body $htmlBody -BodyAsHTML -Attachments @("C:\Reports\security.pdf", "C:\Reports\summary.xlsx") -Priority High
 
 .NOTES
-    Author: Manus AI
+    Author: Colten Anderson
+    Provenance: AI-assisted draft. See the repository README for review and test status.
     Version: 1.0
     
     Prerequisites:

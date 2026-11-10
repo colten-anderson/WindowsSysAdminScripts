@@ -28,7 +28,8 @@
     .\Get-IntuneDeviceReport.ps1 -OutputPath "C:\Reports" -ExportFormat "All" -IncludeCompliance -DeviceFilter "Windows"
 
 .NOTES
-    Author: Manus AI
+    Author: Colten Anderson
+    Provenance: AI-assisted draft. See the repository README for review and test status.
     Version: 1.0
     
     Prerequisites:

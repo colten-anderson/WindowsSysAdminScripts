@@ -34,7 +34,8 @@
     .\Get-MailboxReport.ps1 -OutputPath "C:\Reports" -ExportFormat "All" -IncludeStatistics -IncludePermissions -MailboxType "UserMailbox"
 
 .NOTES
-    Author: Manus AI
+    Author: Colten Anderson
+    Provenance: AI-assisted draft. See the repository README for review and test status.
     Version: 1.0
     
     Prerequisites:

@@ -25,7 +25,8 @@
     .\Test-NetworkConnectivity.ps1 -TargetHost "webserver01" -Port 80
 
 .NOTES
-    Author: Manus AI
+    Author: Colten Anderson
+    Provenance: AI-assisted draft. See the repository README for review and test status.
     Version: 1.0
     
     Prerequisites:
@@ -66,14 +67,14 @@ function Test-Ping {
         $averageLatency = ($pingResult | Measure-Object -Property ResponseTime -Average).Average
         
         if ($successfulPings -gt 0) {
-            Write-Host "✓ Ping successful: $successfulPings/$PingCount replies, Average Latency: $($averageLatency)ms" -ForegroundColor Green
+            Write-Host "[OK] Ping successful: $successfulPings/$PingCount replies, Average Latency: $($averageLatency)ms" -ForegroundColor Green
             return $true
         } else {
-            Write-Host "✗ Ping failed: No replies received." -ForegroundColor Red
+            Write-Host "[FAIL] Ping failed: No replies received." -ForegroundColor Red
             return $false
         }
     } catch {
-        Write-Host "✗ Ping test error: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "[FAIL] Ping test error: $($_.Exception.Message)" -ForegroundColor Red
         return $false
     }
 }
@@ -94,18 +95,18 @@ function Test-TcpPort {
         
         if ($waitHandle.WaitOne($TcpTimeout, $false)) {
             if ($tcpClient.Connected) {
-                Write-Host "✓ TCP Port $PortNumber is open on $HostName." -ForegroundColor Green
+                Write-Host "[OK] TCP Port $PortNumber is open on $HostName." -ForegroundColor Green
                 return $true
             } else {
-                Write-Host "✗ TCP Port $PortNumber is closed on $HostName." -ForegroundColor Red
+                Write-Host "[FAIL] TCP Port $PortNumber is closed on $HostName." -ForegroundColor Red
                 return $false
             }
         } else {
-            Write-Host "✗ TCP Port $PortNumber test timed out on $HostName." -ForegroundColor Red
+            Write-Host "[FAIL] TCP Port $PortNumber test timed out on $HostName." -ForegroundColor Red
             return $false
         }
     } catch {
-        Write-Host "✗ TCP Port test error: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "[FAIL] TCP Port test error: $($_.Exception.Message)" -ForegroundColor Red
         return $false
     } finally {
         if ($tcpClient) { $tcpClient.Close() }
@@ -123,7 +124,7 @@ function Test-DnsResolution {
         $dnsResult = Resolve-DnsName -Name $HostName -ErrorAction Stop
         
         if ($dnsResult) {
-            Write-Host "✓ DNS Resolution successful for $HostName." -ForegroundColor Green
+            Write-Host "[OK] DNS Resolution successful for $HostName." -ForegroundColor Green
             foreach ($record in $dnsResult) {
                 if ($record.Type -eq "A" -or $record.Type -eq "AAAA") {
                     Write-Host "  - Resolved IP: $($record.IPAddress)" -ForegroundColor Gray
@@ -133,11 +134,11 @@ function Test-DnsResolution {
             }
             return $true
         } else {
-            Write-Host "✗ DNS Resolution failed for $HostName." -ForegroundColor Red
+            Write-Host "[FAIL] DNS Resolution failed for $HostName." -ForegroundColor Red
             return $false
         }
     } catch {
-        Write-Host "✗ DNS Resolution error: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "[FAIL] DNS Resolution error: $($_.Exception.Message)" -ForegroundColor Red
         return $false
     }
 }

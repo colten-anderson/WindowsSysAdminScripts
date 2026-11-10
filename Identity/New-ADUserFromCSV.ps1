@@ -25,7 +25,8 @@
     .\New-ADUserFromCSV.ps1 -CSVPath "C:\Users\NewUsers.csv" -DefaultPassword "TempPass123!" -DefaultOU "OU=NewUsers,DC=contoso,DC=com"
 
 .NOTES
-    Author: Manus AI
+    Author: Colten Anderson
+    Provenance: AI-assisted draft. See the repository README for review and test status.
     Version: 1.0
     
     CSV Format Required:

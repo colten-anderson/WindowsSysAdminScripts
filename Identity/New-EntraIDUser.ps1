@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Creates new users in Azure Active Directory using Microsoft Graph.
+    Creates new users in Microsoft Entra ID using Microsoft Graph.
 
 .DESCRIPTION
     This script creates new Azure AD users with specified properties and can optionally
@@ -43,13 +43,14 @@
     Send a welcome email to the user with their credentials.
 
 .EXAMPLE
-    .\New-AzureADUser.ps1 -UserPrincipalName "jdoe@contoso.com" -DisplayName "John Doe" -GivenName "John" -Surname "Doe"
+    .\New-EntraIDUser.ps1 -UserPrincipalName "jdoe@contoso.com" -DisplayName "John Doe" -GivenName "John" -Surname "Doe"
 
 .EXAMPLE
-    .\New-AzureADUser.ps1 -UserPrincipalName "jsmith@contoso.com" -DisplayName "Jane Smith" -GivenName "Jane" -Surname "Smith" -JobTitle "Manager" -Department "Sales" -UsageLocation "US" -AssignLicense "ENTERPRISEPACK"
+    .\New-EntraIDUser.ps1 -UserPrincipalName "jsmith@contoso.com" -DisplayName "Jane Smith" -GivenName "Jane" -Surname "Smith" -JobTitle "Manager" -Department "Sales" -UsageLocation "US" -AssignLicense "ENTERPRISEPACK"
 
 .NOTES
-    Author: Manus AI
+    Author: Colten Anderson
+    Provenance: AI-assisted draft. See the repository README for review and test status.
     Version: 1.0
     
     Prerequisites:

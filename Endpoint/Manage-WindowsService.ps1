@@ -25,7 +25,8 @@
     .\Manage-WindowsService.ps1 -ServiceName "BITS" -Action SetStartupType -StartupType Disabled -ComputerName "DESKTOP01"
 
 .NOTES
-    Author: Manus AI
+    Author: Colten Anderson
+    Provenance: AI-assisted draft. See the repository README for review and test status.
     Version: 1.0
     
     Prerequisites:
@@ -102,7 +103,7 @@ try {
 
 } catch {
     Write-Error "Error managing service 
-'$ServiceName' on $ComputerName: $($_.Exception.Message)"
+'$ServiceName' on ${ComputerName}: $($_.Exception.Message)"
     exit 1
 }
 

@@ -52,7 +52,8 @@
     .\New-VMFromTemplate.ps1 -VMName "WebServer01" -TemplateVHD "C:\Templates\WindowsServer2022.vhdx" -Memory 8 -CPUCount 4 -StartVM
 
 .NOTES
-    Author: Manus AI
+    Author: Colten Anderson
+    Provenance: AI-assisted draft. See the repository README for review and test status.
     Version: 1.0
     
     Prerequisites:
