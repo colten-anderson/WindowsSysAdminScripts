@@ -8,6 +8,8 @@
     was encrypted before enrollment or when the original escrow attempt failed. That device
     looks compliant until someone needs the key.
 
+    Devices that are not Entra ID joined or hybrid joined are skipped (exit 0).
+
     The check passes when:
       - the OS volume is encrypted with protection on,
       - it has at least one recovery password protector, and
@@ -24,6 +26,14 @@
     Provenance: AI-assisted draft. See the repository README for review and test status.
     Run as: SYSTEM, 64-bit PowerShell
 #>
+
+# Escrow to Entra ID only works on Entra joined or hybrid joined devices. Skip anything else
+# (workgroup or personal devices) so the remediation doesn't run and fail.
+$joinState = dsregcmd /status | Select-String -Pattern '^\s*AzureAdJoined\s*:\s*YES'
+if (-not $joinState) {
+    Write-Output 'Device is not Entra ID joined or hybrid joined; Entra ID key escrow does not apply.'
+    exit 0
+}
 
 $volume = Get-BitLockerVolume -MountPoint $env:SystemDrive -ErrorAction SilentlyContinue
 

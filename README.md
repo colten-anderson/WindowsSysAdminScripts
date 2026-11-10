@@ -28,9 +28,9 @@ Each folder holds a detection script and a remediation script. Detection exits `
 
 | Package | Problem it fixes | Status |
 |---|---|---|
-| [WindowsUpdate-LegacyPolicy](Intune/Remediations/WindowsUpdate-LegacyPolicy/) | Leftover WSUS and Group Policy update values (`WUServer`, `UseWUServer`, `DoNotConnectToWindowsUpdateInternetLocations`, and others) that silently block Windows Update for Business rings after a ConfigMgr-to-Intune move. Skips devices that still run the ConfigMgr client. | ⏳ Not yet tested |
-| [BitLocker-KeyEscrow](Intune/Remediations/BitLocker-KeyEscrow/) | Encrypted devices with no recovery key in Entra ID. Adds a recovery password protector if one is missing and backs it up. Doesn't turn on encryption. | ⏳ Not yet tested |
-| [LowDiskSpace](Intune/Remediations/LowDiskSpace/) | Devices too full to install cumulative or feature updates. Clears old temp files, the Delivery Optimization cache, and queued error reports. | ⏳ Not yet tested |
+| [WindowsUpdate-LegacyPolicy](Intune/Remediations/WindowsUpdate-LegacyPolicy/) | Leftover WSUS and Group Policy update values (`WUServer`, `UseWUServer`, `DoNotConnectToWindowsUpdateInternetLocations`, and others) that silently block Windows Update for Business rings after a ConfigMgr-to-Intune move. Skips devices that still run the ConfigMgr client. | 🔍 Reviewed. Detection run on Windows 11 (Nov 2026, compliant result); remediation not yet run. |
+| [BitLocker-KeyEscrow](Intune/Remediations/BitLocker-KeyEscrow/) | Encrypted devices with no recovery key in Entra ID. Adds a recovery password protector if one is missing and backs it up. Doesn't turn on encryption. | 🔍 Reviewed. Detection run on a non-joined Windows 11 device (Nov 2026); added a join-state check as a result. Remediation not yet run. |
+| [LowDiskSpace](Intune/Remediations/LowDiskSpace/) | Devices too full to install cumulative or feature updates. Clears old temp files, the Delivery Optimization cache, and queued error reports. | 🔍 Reviewed. Detection run on Windows 11 (Nov 2026, compliant result); remediation not yet run. |
 
 ## Windows endpoint
 
