@@ -2,6 +2,8 @@
 .SYNOPSIS
     Uninstalls Microsoft Windows Desktop Runtime 10.0.13 (x64 and/or x86) silently.
 .NOTES
+    Author: Colten Anderson
+    Provenance: AI-assisted draft. See the repository README for review and test status.
     Run as SYSTEM (Intune Win32 uninstall command, remediation, or platform script).
     Exit 0 = removed or not present, 3010 = removed but reboot pending, 1 = failure.
     Log: C:\Windows\Temp\Uninstall-DotNetDesktopRuntime-10.0.13.log
