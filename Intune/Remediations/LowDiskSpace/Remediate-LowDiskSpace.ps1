@@ -26,6 +26,12 @@ $logFile    = 'C:\ProgramData\Microsoft\IntuneManagementExtension\Logs\Remediate
 $maxAgeDays = 7
 $cutoff     = (Get-Date).AddDays(-$maxAgeDays)
 
+# The IME log folder only exists on Intune-managed devices; create it so manual runs log too.
+$logDir = Split-Path -Path $logFile -Parent
+if (-not (Test-Path -LiteralPath $logDir)) {
+    New-Item -ItemType Directory -Path $logDir -Force | Out-Null
+}
+
 function Write-Log {
     param([string]$Message)
     $line = '{0:yyyy-MM-dd HH:mm:ss} {1}' -f (Get-Date), $Message
@@ -59,7 +65,7 @@ try {
     Write-Log "Cleaned temp folders for $(@($profiles).Count) profile(s)"
 
     if (Get-Command -Name Delete-DeliveryOptimizationCache -ErrorAction SilentlyContinue) {
-        Delete-DeliveryOptimizationCache -Force -ErrorAction SilentlyContinue
+        Delete-DeliveryOptimizationCache -Force -ErrorAction SilentlyContinue *> $null
         Write-Log 'Cleared Delivery Optimization cache'
     }
 
